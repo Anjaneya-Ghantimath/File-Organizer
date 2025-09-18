@@ -8,6 +8,7 @@ import shutil
 from pathlib import Path
 import logging
 from datetime import datetime
+import json
 
 
 class SimpleFileOrganizer:
@@ -30,6 +31,8 @@ class SimpleFileOrganizer:
         }
         
         self.stats = {"moved": 0, "errors": 0}
+        self.undo_data = []
+        self.undo_file = self.target_directory / ".file_organizer_undo.json"
 
     def setup_logging(self, log_level: str = "INFO"):
         """Set up logging configuration."""
@@ -46,6 +49,43 @@ class SimpleFileOrganizer:
         )
         self.logger = logging.getLogger(__name__)
         self.logger.info(f"File Organizer initialized. Log file: {log_filename}")
+    
+    def save_undo_data(self):
+        """Save undo data to JSON file."""
+        try:
+            undo_info = {
+                "timestamp": datetime.now().isoformat(),
+                "target_directory": str(self.target_directory),
+                "moves": self.undo_data
+            }
+            with open(self.undo_file, 'w') as f:
+                json.dump(undo_info, f, indent=2)
+            self.logger.info(f"Undo data saved to {self.undo_file}")
+        except Exception as e:
+            self.logger.error(f"Failed to save undo data: {e}")
+    
+    def load_undo_data(self):
+        """Load undo data from JSON file."""
+        try:
+            if self.undo_file.exists():
+                with open(self.undo_file, 'r') as f:
+                    undo_info = json.load(f)
+                    self.undo_data = undo_info.get("moves", [])
+                    self.logger.info(f"Loaded {len(self.undo_data)} undo entries")
+                    return True
+        except Exception as e:
+            self.logger.error(f"Failed to load undo data: {e}")
+        return False
+    
+    def clear_undo_data(self):
+        """Clear undo data and remove undo file."""
+        try:
+            self.undo_data = []
+            if self.undo_file.exists():
+                self.undo_file.unlink()
+            self.logger.info("Undo data cleared")
+        except Exception as e:
+            self.logger.error(f"Failed to clear undo data: {e}")
     
     def get_file_category(self, file_extension):
         """Get category for file extension."""
@@ -119,6 +159,14 @@ class SimpleFileOrganizer:
                     print(f"Moved: {file_path.name} -> {category}/")
                     if hasattr(self, 'logger'):
                         self.logger.info(f"Moved: {file_path.name} -> {category}/{destination.name}")
+                    
+                    # Track for undo
+                    self.undo_data.append({
+                        "original_path": str(file_path),
+                        "new_path": str(destination),
+                        "filename": file_path.name,
+                        "category": category
+                    })
                     self.stats["moved"] += 1
                     
             except Exception as e:
@@ -134,6 +182,83 @@ class SimpleFileOrganizer:
             if hasattr(self, 'logger'):
                 self.logger.info("-" * 40)
                 self.logger.info(f"Summary: {self.stats['moved']} files moved, {self.stats['errors']} errors")
+            
+            # Save undo data if files were moved
+            if self.stats["moved"] > 0:
+                self.save_undo_data()
+                print(f"Undo data saved. Use --undo to reverse these changes.")
+        
+        return True
+    
+    def undo_organization(self, dry_run=False):
+        """Undo the last file organization."""
+        if hasattr(self, 'logger'):
+            self.logger.info(f"Starting undo operation{' (DRY RUN)' if dry_run else ''}")
+        
+        # Load undo data
+        if not self.load_undo_data():
+            print("No undo data found. Nothing to undo.")
+            return False
+        
+        if not self.undo_data:
+            print("No undo data available. Nothing to undo.")
+            return False
+        
+        print(f"Found {len(self.undo_data)} files to undo")
+        print("-" * 40)
+        
+        undo_stats = {"moved": 0, "errors": 0}
+        
+        # Process each undo entry
+        for move_info in self.undo_data:
+            try:
+                original_path = Path(move_info["original_path"])
+                new_path = Path(move_info["new_path"])
+                
+                if dry_run:
+                    print(f"[DRY RUN] {new_path.name} -> {original_path.parent.name}/")
+                    if hasattr(self, 'logger'):
+                        self.logger.info(f"[DRY RUN] Would undo: {new_path.name} -> {original_path.parent.name}/")
+                else:
+                    # Check if the file still exists in the new location
+                    if not new_path.exists():
+                        print(f"Warning: {new_path.name} not found in {move_info['category']}/ - skipping")
+                        if hasattr(self, 'logger'):
+                            self.logger.warning(f"File not found for undo: {new_path}")
+                        continue
+                    
+                    # Check if original location is available
+                    if original_path.exists():
+                        print(f"Warning: {original_path.name} already exists in original location - skipping")
+                        if hasattr(self, 'logger'):
+                            self.logger.warning(f"Original location occupied: {original_path}")
+                        continue
+                    
+                    # Move file back
+                    shutil.move(str(new_path), str(original_path))
+                    print(f"Undone: {new_path.name} -> {original_path.parent.name}/")
+                    if hasattr(self, 'logger'):
+                        self.logger.info(f"Undone: {new_path.name} -> {original_path.parent.name}/")
+                    undo_stats["moved"] += 1
+                    
+            except Exception as e:
+                print(f"Error undoing {move_info.get('filename', 'unknown')}: {e}")
+                if hasattr(self, 'logger'):
+                    self.logger.error(f"Error undoing {move_info.get('filename', 'unknown')}: {e}")
+                undo_stats["errors"] += 1
+        
+        # Show summary
+        if not dry_run:
+            print("-" * 40)
+            print(f"Undo Summary: {undo_stats['moved']} files moved back, {undo_stats['errors']} errors")
+            if hasattr(self, 'logger'):
+                self.logger.info("-" * 40)
+                self.logger.info(f"Undo Summary: {undo_stats['moved']} files moved back, {undo_stats['errors']} errors")
+            
+            # Clear undo data after successful undo
+            if undo_stats["moved"] > 0:
+                self.clear_undo_data()
+                print("Undo data cleared.")
         
         return True
 
@@ -143,27 +268,43 @@ def main():
     import sys
     
     if len(sys.argv) < 2:
-        print("Usage: python file_organizer.py <directory> [--dry-run]")
+        print("Usage: python file_organizer.py <directory> [--dry-run] [--undo]")
         print("Example: python file_organizer.py ~/Downloads --dry-run")
+        print("         python file_organizer.py ~/Downloads --undo")
         return
     
     directory = sys.argv[1]
     dry_run = "--dry-run" in sys.argv
+    undo_mode = "--undo" in sys.argv
     
     organizer = SimpleFileOrganizer(directory)
     
-    print(f"File Organizer")
-    print(f"Target: {directory}")
-    print(f"Mode: {'DRY RUN' if dry_run else 'ORGANIZE FILES'}")
-    print("=" * 40)
-    
-    if not dry_run:
-        confirm = input("Proceed with organizing files? (y/N): ")
-        if confirm.lower() not in ['y', 'yes']:
-            print("Cancelled.")
-            return
-    
-    organizer.organize_files(dry_run)
+    if undo_mode:
+        print(f"File Organizer - UNDO MODE")
+        print(f"Target: {directory}")
+        print(f"Mode: {'DRY RUN' if dry_run else 'UNDO ORGANIZATION'}")
+        print("=" * 40)
+        
+        if not dry_run:
+            confirm = input("Proceed with undoing file organization? (y/N): ")
+            if confirm.lower() not in ['y', 'yes']:
+                print("Cancelled.")
+                return
+        
+        organizer.undo_organization(dry_run)
+    else:
+        print(f"File Organizer")
+        print(f"Target: {directory}")
+        print(f"Mode: {'DRY RUN' if dry_run else 'ORGANIZE FILES'}")
+        print("=" * 40)
+        
+        if not dry_run:
+            confirm = input("Proceed with organizing files? (y/N): ")
+            if confirm.lower() not in ['y', 'yes']:
+                print("Cancelled.")
+                return
+        
+        organizer.organize_files(dry_run)
 
 
 if __name__ == "__main__":
