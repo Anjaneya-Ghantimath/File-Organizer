@@ -153,13 +153,14 @@ class SimpleFileOrganizer:
         if hasattr(self, 'logger'):
             self.logger.info("Category folders created/verified")
     
-    def organize_files(self, dry_run=False, sort_by='name', sort_order='asc'):
+    def organize_files(self, dry_run=False, sort_by='name', sort_order='asc', progress_callback=None):
         """Organize all files in the directory.
         
         Args:
             dry_run (bool): If True, only preview changes without moving files
             sort_by (str): Sort criteria - 'name', 'date', or 'size'
             sort_order (str): Sort order - 'asc' for ascending, 'desc' for descending
+            progress_callback (callable): Optional callback for progress updates (current, total, filename)
         """
         if hasattr(self, 'logger'):
             self.logger.info(f"Starting file organization{' (DRY RUN)' if dry_run else ''}")
@@ -193,7 +194,13 @@ class SimpleFileOrganizer:
             self.logger.info(f"Found {len(files)} files to organize")
         
         # Process each file
-        for file_path in files:
+        for i, file_path in enumerate(files, 1):
+            # Update progress if callback provided
+            if progress_callback:
+                try:
+                    progress_callback(i, len(files), file_path.name)
+                except Exception:
+                    pass  # Don't let progress callback errors stop the process
             try:
                 category = self.get_file_category(file_path.suffix)
                 destination = self.target_directory / category / file_path.name
@@ -247,7 +254,7 @@ class SimpleFileOrganizer:
         
         return True
     
-    def undo_organization(self, dry_run=False):
+    def undo_organization(self, dry_run=False, progress_callback=None):
         """Undo the last file organization."""
         if hasattr(self, 'logger'):
             self.logger.info(f"Starting undo operation{' (DRY RUN)' if dry_run else ''}")
@@ -267,7 +274,14 @@ class SimpleFileOrganizer:
         undo_stats = {"moved": 0, "errors": 0}
         
         # Process each undo entry
-        for move_info in self.undo_data:
+        for i, move_info in enumerate(self.undo_data, 1):
+            # Update progress if callback provided
+            if progress_callback:
+                try:
+                    filename = move_info.get('filename', 'unknown')
+                    progress_callback(i, len(self.undo_data), filename)
+                except Exception:
+                    pass  # Don't let progress callback errors stop the process
             try:
                 original_path = Path(move_info["original_path"])
                 new_path = Path(move_info["new_path"])
@@ -406,6 +420,16 @@ class FileOrganizerGUI:
         self.status_var = tk.StringVar(value="Idle")
         ttk.Label(actions_frame, textvariable=self.status_var).pack(side=tk.RIGHT)
 
+        # Progress bar
+        progress_frame = ttk.Frame(self.root)
+        progress_frame.pack(fill=tk.X, **padding)
+        
+        self.progress_var = tk.StringVar(value="Ready")
+        ttk.Label(progress_frame, textvariable=self.progress_var).pack(side=tk.LEFT)
+        
+        self.progress_bar = ttk.Progressbar(progress_frame, mode='determinate', length=300)
+        self.progress_bar.pack(side=tk.RIGHT, padx=(8, 0))
+
         log_frame = ttk.LabelFrame(self.root, text="Logs")
         log_frame.pack(fill=tk.BOTH, expand=True, **padding)
         self.log_text = ScrolledText(log_frame, wrap=tk.WORD, height=18)
@@ -448,10 +472,11 @@ class FileOrganizerGUI:
         do_undo = self.undo_var.get()
         dry_run = self.dry_run_var.get()
 
-        # Clear previous logs
+        # Clear previous logs and reset progress
         self.log_text.configure(state=tk.NORMAL)
         self.log_text.delete("1.0", tk.END)
         self.log_text.configure(state=tk.DISABLED)
+        self._reset_progress()
 
         self.run_button.configure(state=tk.DISABLED)
         self.stop_button.configure(state=tk.NORMAL)
@@ -466,12 +491,24 @@ class FileOrganizerGUI:
                 logger.addHandler(self.gui_handler)
                 try:
                     if do_undo:
-                        organizer.undo_organization(dry_run=dry_run)
+                        # Create progress callback for undo operation
+                        def progress_callback(current, total, filename):
+                            def update_gui():
+                                self._update_progress(current, total, filename)
+                            self.root.after(0, update_gui)
+                        organizer.undo_organization(dry_run=dry_run, progress_callback=progress_callback)
                     else:
                         # Get sorting options from GUI
                         sort_by = self.sort_by_var.get()
                         sort_order = self.sort_order_var.get()
-                        organizer.organize_files(dry_run=dry_run, sort_by=sort_by, sort_order=sort_order)
+                        
+                        # Create progress callback that updates GUI in main thread
+                        def progress_callback(current, total, filename):
+                            def update_gui():
+                                self._update_progress(current, total, filename)
+                            self.root.after(0, update_gui)
+                        
+                        organizer.organize_files(dry_run=dry_run, sort_by=sort_by, sort_order=sort_order, progress_callback=progress_callback)
                 finally:
                     logger.removeHandler(self.gui_handler)
             except Exception as e:
@@ -491,6 +528,23 @@ class FileOrganizerGUI:
         self.run_button.configure(state=tk.NORMAL)
         self.stop_button.configure(state=tk.DISABLED)
         self.status_var.set("Done")
+        self.progress_bar['value'] = 100
+        self.progress_var.set("Complete")
+
+    def _update_progress(self, current, total, filename=""):
+        """Update progress bar and status."""
+        if total > 0:
+            percentage = (current / total) * 100
+            self.progress_bar['value'] = percentage
+            self.progress_var.set(f"Processing: {current}/{total} ({percentage:.1f}%) - {filename}")
+        else:
+            self.progress_bar['value'] = 0
+            self.progress_var.set("Ready")
+
+    def _reset_progress(self):
+        """Reset progress bar to initial state."""
+        self.progress_bar['value'] = 0
+        self.progress_var.set("Ready")
 
     def run(self):
         self.root.mainloop()
