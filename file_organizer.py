@@ -368,6 +368,10 @@ class FileOrganizerGUI:
 
         self.worker_thread: threading.Thread | None = None
         self.worker_running = False
+        
+        # Track operation type for notifications
+        self.current_operation = None  # 'organize', 'undo', or None
+        self.is_dry_run = False
 
         self._build_widgets()
         self._poll_log_queue()
@@ -471,6 +475,10 @@ class FileOrganizerGUI:
 
         do_undo = self.undo_var.get()
         dry_run = self.dry_run_var.get()
+        
+        # Track operation type for notifications
+        self.current_operation = 'undo' if do_undo else 'organize'
+        self.is_dry_run = dry_run
 
         # Clear previous logs and reset progress
         self.log_text.configure(state=tk.NORMAL)
@@ -530,6 +538,30 @@ class FileOrganizerGUI:
         self.status_var.set("Done")
         self.progress_bar['value'] = 100
         self.progress_var.set("Complete")
+        
+        # Show completion notification
+        self._show_completion_notification()
+
+    def _show_completion_notification(self):
+        """Show appropriate completion notification based on operation type."""
+        if self.current_operation == 'organize':
+            if self.is_dry_run:
+                messagebox.showinfo("Dry Run Complete", 
+                    "Dry run completed successfully!\n\nAll files have been analyzed and would be organized as shown in the logs.")
+            else:
+                messagebox.showinfo("Organization Complete", 
+                    "Operation completed successfully!\n\nAll files have been organized into their respective categories.")
+        elif self.current_operation == 'undo':
+            if self.is_dry_run:
+                messagebox.showinfo("Undo Dry Run Complete", 
+                    "Undo dry run completed successfully!\n\nAll files would be restored to their original locations as shown in the logs.")
+            else:
+                messagebox.showinfo("Undo Complete", 
+                    "Undo operation completed successfully!\n\nAll files have been restored to their original locations.")
+        
+        # Reset operation tracking
+        self.current_operation = None
+        self.is_dry_run = False
 
     def _update_progress(self, current, total, filename=""):
         """Update progress bar and status."""
@@ -614,7 +646,16 @@ def main():
                 print("Cancelled.")
                 return
         
-        organizer.undo_organization(dry_run)
+        result = organizer.undo_organization(dry_run)
+        
+        # Show completion notification for CLI undo
+        if result:
+            if dry_run:
+                print("\n✅ Undo dry run completed successfully!")
+                print("All files would be restored to their original locations as shown above.")
+            else:
+                print("\n✅ Undo operation completed successfully!")
+                print("All files have been restored to their original locations.")
     else:
         print(f"File Organizer")
         print(f"Target: {directory}")
@@ -628,7 +669,24 @@ def main():
                 print("Cancelled.")
                 return
         
-        organizer.organize_files(dry_run, sort_by, sort_order)
+        result = organizer.organize_files(dry_run, sort_by, sort_order)
+        
+        # Show completion notification for CLI
+        if result:
+            if undo_mode:
+                if dry_run:
+                    print("\n✅ Undo dry run completed successfully!")
+                    print("All files would be restored to their original locations as shown above.")
+                else:
+                    print("\n✅ Undo operation completed successfully!")
+                    print("All files have been restored to their original locations.")
+            else:
+                if dry_run:
+                    print("\n✅ Dry run completed successfully!")
+                    print("All files have been analyzed and would be organized as shown above.")
+                else:
+                    print("\n✅ Operation completed successfully!")
+                    print("All files have been organized into their respective categories.")
 
 
 if __name__ == "__main__":
