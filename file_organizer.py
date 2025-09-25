@@ -472,6 +472,8 @@ class FileOrganizerGUI:
         self.worker_running = False
         self.current_operation = None
         self.is_dry_run = False
+        self.malware_count = 0
+        self.backup_location = None
 
         self._build_widgets()
         self._poll_log_queue()
@@ -491,6 +493,12 @@ class FileOrganizerGUI:
         # Frame styles
         self.style.configure('Card.TFrame', background='white', relief='raised', borderwidth=1)
         self.style.configure('Header.TFrame', background=self.colors['primary'])
+
+        # Progress bar (green) style
+        try:
+            self.style.configure('Green.Horizontal.TProgressbar', background='#10b981')
+        except Exception:
+            pass
 
     def _build_widgets(self):
         """Build the enhanced GUI with professional styling."""
@@ -557,6 +565,15 @@ class FileOrganizerGUI:
         ttk.Checkbutton(mode_frame, text="↩️ Undo last operation", 
                        variable=self.undo_var, command=self._ensure_mutual_exclusive).pack(side=tk.LEFT)
 
+        # Backup options
+        backup_frame = ttk.Frame(org_frame)
+        backup_frame.grid(row=2, column=0, columnspan=6, sticky=tk.W, pady=(10, 0))
+        self.backup_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(backup_frame, text="💾 Create backup before organizing", 
+                        variable=self.backup_var).pack(side=tk.LEFT)
+        ttk.Button(backup_frame, text="📂 Choose Backup Location", 
+                   command=self._choose_backup_location, style='Primary.TButton').pack(side=tk.LEFT, padx=(12, 0))
+
         # Action buttons and status card
         action_card = ttk.LabelFrame(main_container, text=" 🚀 Actions & Status ", style='Card.TFrame')
         action_card.pack(fill=tk.X, pady=(0, 10))
@@ -574,7 +591,11 @@ class FileOrganizerGUI:
         
         self.stop_button = ttk.Button(button_frame, text="⏹️ Stop", 
                                      command=self._on_stop, style='Danger.TButton', state=tk.DISABLED)
-        self.stop_button.pack(side=tk.LEFT)
+        self.stop_button.pack(side=tk.LEFT, padx=(0, 10))
+
+        # Clear logs button
+        ttk.Button(button_frame, text="🗑️ Clear Logs", 
+                  command=self._clear_logs).pack(side=tk.LEFT)
 
         # Status and progress
         status_frame = ttk.Frame(action_frame)
@@ -594,7 +615,7 @@ class FileOrganizerGUI:
         self.progress_var = tk.StringVar(value="Ready to organize files...")
         ttk.Label(progress_frame, textvariable=self.progress_var, font=("Segoe UI", 9)).pack(side=tk.LEFT)
         
-        self.progress_bar = ttk.Progressbar(progress_frame, mode='determinate', length=200)
+        self.progress_bar = ttk.Progressbar(progress_frame, mode='determinate', length=200, style='Green.Horizontal.TProgressbar')
         self.progress_bar.pack(side=tk.RIGHT, padx=(10, 0))
 
         # Enhanced logs card
@@ -613,6 +634,11 @@ class FileOrganizerGUI:
         self.log_text.tag_config("WARNING", foreground=self.colors['warning'])
         self.log_text.tag_config("INFO", foreground=self.colors['dark'])
         self.log_text.tag_config("SUSPICIOUS", foreground=self.colors['danger'], background="#fef2f2")
+
+        # Notification bar (hidden by default)
+        self.notification_frame = ttk.Frame(main_container)
+        self.notification_label = ttk.Label(self.notification_frame, text="", foreground=self.colors['danger'])
+        self.notification_label.pack(side=tk.LEFT, padx=8, pady=6)
 
     def _choose_directory(self):
         """Choose directory with improved dialog."""
@@ -640,6 +666,68 @@ class FileOrganizerGUI:
         self.log_text.insert(tk.END, text, tag)
         self.log_text.see(tk.END)
         self.log_text.configure(state=tk.DISABLED)
+
+        # If log mentions suspicious count in summary, show notification
+        try:
+            if "suspicious files" in text.lower():
+                import re as _re
+                m = _re.search(r"(\d+)\s+suspicious", text)
+                if m:
+                    self.malware_count = int(m.group(1))
+                    self._show_malware_notification(self.malware_count)
+        except Exception:
+            pass
+
+    def _clear_logs(self):
+        """Clear the log display."""
+        self.log_text.configure(state=tk.NORMAL)
+        self.log_text.delete("1.0", tk.END)
+        self.log_text.configure(state=tk.DISABLED)
+        self._hide_notification()
+
+    def _show_malware_notification(self, count: int):
+        """Show malware detection notification banner."""
+        if count > 0:
+            try:
+                self.notification_label.configure(text=f"⚠️ SECURITY ALERT: {count} suspicious files quarantined")
+                self.notification_frame.pack(fill=tk.X, padx=15, pady=(8, 0))
+                # Auto hide after 10s
+                self.root.after(10000, self._hide_notification)
+            except Exception:
+                pass
+
+    def _hide_notification(self):
+        try:
+            self.notification_frame.pack_forget()
+        except Exception:
+            pass
+
+    def _choose_backup_location(self):
+        """Choose backup destination directory."""
+        path = filedialog.askdirectory(title="Select Backup Location")
+        if path:
+            self.backup_location = path
+            messagebox.showinfo("✅ Backup Location Set", f"Backup will be saved to:\n{path}")
+
+    def _create_backup(self, source_dir: str) -> bool:
+        """Create a zip backup of current files in the directory."""
+        if not self.backup_location:
+            return False
+        try:
+            import zipfile as _zip
+            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+            backup_name = f"file_organizer_backup_{ts}.zip"
+            backup_path = Path(self.backup_location) / backup_name
+            self.message_queue.put(f"Creating backup: {backup_name}\n")
+            with _zip.ZipFile(backup_path, 'w', _zip.ZIP_DEFLATED) as zf:
+                for f in Path(source_dir).iterdir():
+                    if f.is_file() and not f.name.startswith('.'):
+                        zf.write(f, f.name)
+            self.message_queue.put(f"✅ Backup created successfully: {backup_path}\n")
+            return True
+        except Exception as e:
+            self.message_queue.put(f"❌ Backup failed: {e}\n")
+            return False
 
     def _poll_log_queue(self):
         """Poll log queue and update display."""
@@ -671,6 +759,17 @@ class FileOrganizerGUI:
         do_undo = self.undo_var.get()
         dry_run = self.dry_run_var.get()
         org_type = self.org_type_var.get()
+        create_backup = self.backup_var.get()
+
+        # Validate backup location when enabled (only for actual organize)
+        if create_backup and not do_undo and not dry_run:
+            if not self.backup_location:
+                if messagebox.askyesno("💾 Backup Location", "Backup is enabled but no location is set.\nChoose a backup location now?"):
+                    self._choose_backup_location()
+                    if not self.backup_location:
+                        return
+                else:
+                    return
         
         # Track operation type for notifications
         self.current_operation = 'undo' if do_undo else 'organize'
@@ -689,8 +788,12 @@ class FileOrganizerGUI:
         self.worker_running = True
 
         def _work():
-            """Worker thread function."""
+            """Worker thread function with optional backup."""
             try:
+                # Backup before organizing
+                if create_backup and not do_undo and not dry_run:
+                    if not self._create_backup(directory):
+                        return
                 organizer = SimpleFileOrganizer(directory)
                 logger = logging.getLogger(__name__)
                 logger.addHandler(self.gui_handler)
@@ -719,6 +822,11 @@ class FileOrganizerGUI:
                             organization_type=org_type,
                             progress_callback=progress_callback
                         )
+                        try:
+                            # Capture suspicious count for notification
+                            self.malware_count = int(organizer.stats.get("suspicious", 0))
+                        except Exception:
+                            pass
                 finally:
                     logger.removeHandler(self.gui_handler)
             except Exception as e:
@@ -746,20 +854,23 @@ class FileOrganizerGUI:
         self._show_completion_notification()
 
     def _show_completion_notification(self):
-        """Show enhanced completion notifications."""
+        """Show enhanced completion notifications with malware/backup info."""
+        malware_info = f"\n🛡️ {self.malware_count} suspicious files quarantined" if self.malware_count > 0 else ""
         if self.current_operation == 'organize':
             if self.is_dry_run:
                 messagebox.showinfo("🔍 Analysis Complete", 
                     "Dry run completed successfully! 📊\n\n"
                     "✅ All files have been analyzed\n"
                     "📁 Organization plan shown in logs\n"
-                    "🛡️ Suspicious files identified\n"
+                    "🛡️ Security scan completed" + malware_info + "\n"
                     "\nReady for actual organization!")
             else:
+                backup_info = "\n💾 Backup created before organizing" if self.backup_var.get() and self.backup_location else ""
                 messagebox.showinfo("🗂️ Organization Complete", 
                     "Files organized successfully! 🎉\n\n"
                     "✅ All files sorted into categories\n"
-                    "🛡️ Suspicious files quarantined\n"
+                    "🛡️ Security scan completed" + malware_info +
+                    backup_info + "\n"
                     "📝 Activity logged for review\n"
                     "↩️ Undo data saved for reversal")
         elif self.current_operation == 'undo':
@@ -775,9 +886,9 @@ class FileOrganizerGUI:
                     "✅ All files returned to original locations\n"
                     "🧹 Organization folders cleaned up\n"
                     "📝 Undo history cleared")
-        
         self.current_operation = None
         self.is_dry_run = False
+        self.malware_count = 0
 
     def _update_progress(self, current, total, filename="", action="Processing"):
         """Enhanced progress updates."""
@@ -796,6 +907,7 @@ class FileOrganizerGUI:
         """Reset progress indicators."""
         self.progress_bar['value'] = 0
         self.progress_var.set("Ready to organize files...")
+        self.malware_count = 0
 
     def run(self):
         """Run the GUI application."""
@@ -859,6 +971,20 @@ def main():
             except (ValueError, IndexError):
                 print("Invalid --sort-order usage. Using 'asc'.")
         
+        # Optional CLI backup flag: --backup <directory>
+        backup_location = None
+        if "--backup" in sys.argv:
+            try:
+                bidx = sys.argv.index("--backup")
+                if bidx + 1 < len(sys.argv):
+                    backup_location = sys.argv[bidx + 1]
+                else:
+                    print("Invalid --backup usage. Provide backup directory path.")
+                    return
+            except (ValueError, IndexError):
+                print("Invalid --backup usage. Provide backup directory path.")
+                return
+
         # Run CLI version
         organizer = SimpleFileOrganizer(directory)
         
@@ -893,6 +1019,22 @@ def main():
             print("=" * 50)
             
             if not dry_run:
+                # If backup requested via CLI, create it before organizing
+                if backup_location:
+                    try:
+                        import zipfile as _zip
+                        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        backup_name = f"file_organizer_backup_{ts}.zip"
+                        backup_path = Path(backup_location) / backup_name
+                        print(f"💾 Creating backup: {backup_path}")
+                        with _zip.ZipFile(backup_path, 'w', _zip.ZIP_DEFLATED) as zf:
+                            for f in Path(directory).iterdir():
+                                if f.is_file() and not f.name.startswith('.'):
+                                    zf.write(f, f.name)
+                        print(f"✅ Backup created: {backup_path}")
+                    except Exception as e:
+                        print(f"❌ Backup failed: {e}")
+                        return
                 confirm = input("Proceed with organizing files? (y/N): ")
                 if confirm.lower() not in ['y', 'yes']:
                     print("❌ Cancelled.")
@@ -907,6 +1049,8 @@ def main():
                 else:
                     print("\n✅ Organization completed successfully!")
                     print("🗂️ Files organized with malware protection enabled.")
+                    if backup_location:
+                        print("💾 Backup was created prior to organizing.")
 
     else:
         # Launch GUI if no CLI args and Tkinter is available
@@ -928,6 +1072,7 @@ def main():
         print("  --org-type TYPE        Organization type: type|date|size|extension")
         print("  --sort-by FIELD        Sort by: name|date|size")
         print("  --sort-order ORDER     Sort order: asc|desc")
+        print("  --backup LOCATION      Create a zip backup to LOCATION before organizing")
         print("\nExamples:")
         print("  python file_organizer.py ~/Downloads --dry-run")
         print("  python file_organizer.py ~/Downloads --org-type date")
