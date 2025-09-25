@@ -1,0 +1,13 @@
+2025-09-11 16:27:20,958 - INFO - File Organizer initialized. Log file: logs\file_organizer_20250911_162720.log
+2025-09-11 16:27:23,720 - INFO - Starting file organization
+2025-09-11 16:27:23,720 - INFO - Target directory: C:\Users\anjan\Desktop\PYDEV_PRO1\DEV1
+2025-09-11 16:27:23,722 - INFO - Category folders created/verified
+2025-09-11 16:27:23,722 - INFO - Found 6 files to organize
+2025-09-11 16:27:23,729 - INFO - Moved: New Bitmap image.bmp -> Images/New Bitmap image.bmp
+2025-09-11 16:27:23,730 - INFO - Moved: New Microsoft Excel Worksheet.xlsx -> Documents/New Microsoft Excel Worksheet.xlsx
+2025-09-11 16:27:23,732 - INFO - Moved: New Microsoft Word Document.docx -> Documents/New Microsoft Word Document.docx
+2025-09-11 16:27:23,732 - INFO - Moved: New Text Document - Copy.mp4 -> Videos/New Text Document - Copy.mp4
+2025-09-11 16:27:23,732 - INFO - Moved: New Text Document - Copy.vd -> Others/New Text Document - Copy.vd
+2025-09-11 16:27:23,732 - INFO - Moved: New Text Document.mp3 -> Audio/New Text Document.mp3
+2025-09-11 16:27:23,732 - INFO - ----------------------------------------
+2025-09-11 16:27:23,732 - INFO - Summary: 6 files moved, 0 errors

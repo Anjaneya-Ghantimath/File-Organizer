@@ -1,0 +1,20 @@
+2025-09-19 10:42:54,712 - INFO - File Organizer initialized. Log file: logs\file_organizer_20250919_104254.log
+2025-09-19 10:42:54,715 - INFO - Starting file organization
+2025-09-19 10:42:54,716 - INFO - Target directory: C:\Users\anjan\Desktop\2file_org
+2025-09-19 10:42:54,717 - INFO - Sort by: name, Order: asc
+2025-09-19 10:42:54,719 - INFO - Category folders created/verified
+2025-09-19 10:42:54,719 - INFO - Files sorted by name (asc)
+2025-09-19 10:42:54,719 - INFO - Found 10 files to organize
+2025-09-19 10:42:54,748 - INFO - Moved: New Bitmap image.bmp -> Images/New Bitmap image.bmp
+2025-09-19 10:42:54,752 - INFO - Moved: New Microsoft Excel Worksheet.xlsx -> Documents/New Microsoft Excel Worksheet.xlsx
+2025-09-19 10:42:54,755 - INFO - Moved: New Microsoft PowerPoint Presentation.pptx -> Documents/New Microsoft PowerPoint Presentation.pptx
+2025-09-19 10:42:54,770 - INFO - Moved: New Microsoft Word Document.docx -> Documents/New Microsoft Word Document.docx
+2025-09-19 10:42:54,784 - INFO - Moved: New Text Document (2) .py -> Code/New Text Document (2) .py
+2025-09-19 10:42:54,787 - INFO - Moved: New Text Document (2).mp3 -> Audio/New Text Document (2).mp3
+2025-09-19 10:42:54,789 - INFO - Moved: New Text Document (2).mp4 -> Videos/New Text Document (2).mp4
+2025-09-19 10:42:54,794 - INFO - Moved: New Text Document (2).py -> Code/New Text Document (2).py
+2025-09-19 10:42:54,800 - INFO - Moved: New Text Document (4).py -> Code/New Text Document (4).py
+2025-09-19 10:42:54,801 - INFO - Moved: New Text Document.txt -> Documents/New Text Document.txt
+2025-09-19 10:42:54,801 - INFO - ----------------------------------------
+2025-09-19 10:42:54,802 - INFO - Summary: 10 files moved, 0 errors
+2025-09-19 10:42:54,802 - INFO - Undo data saved to C:\Users\anjan\Desktop\2file_org\.file_organizer_undo.json

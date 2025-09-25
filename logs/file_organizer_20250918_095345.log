@@ -1,0 +1,9 @@
+2025-09-18 09:53:45,792 - INFO - File Organizer initialized. Log file: logs\file_organizer_20250918_095345.log
+2025-09-18 09:53:45,792 - INFO - Starting undo operation (DRY RUN)
+2025-09-18 09:53:45,822 - INFO - Loaded 6 undo entries
+2025-09-18 09:53:45,823 - INFO - [DRY RUN] Would undo: New Bitmap image.bmp -> 2file_org/
+2025-09-18 09:53:45,825 - INFO - [DRY RUN] Would undo: New Microsoft PowerPoint Presentation.pptx -> 2file_org/
+2025-09-18 09:53:45,825 - INFO - [DRY RUN] Would undo: New Microsoft Word Document.docx -> 2file_org/
+2025-09-18 09:53:45,825 - INFO - [DRY RUN] Would undo: New Text Document (2).mp3 -> 2file_org/
+2025-09-18 09:53:45,848 - INFO - [DRY RUN] Would undo: New Text Document (2).mp4 -> 2file_org/
+2025-09-18 09:53:45,848 - INFO - [DRY RUN] Would undo: New Text Document.txt -> 2file_org/

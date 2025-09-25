@@ -1,0 +1,17 @@
+2025-09-18 16:11:20,684 - INFO - File Organizer initialized. Log file: logs\file_organizer_20250918_161120.log
+2025-09-18 16:11:20,694 - INFO - Starting file organization
+2025-09-18 16:11:20,697 - INFO - Target directory: C:\Users\anjan\Desktop\2file_org
+2025-09-18 16:11:20,697 - INFO - Category folders created/verified
+2025-09-18 16:11:20,707 - INFO - Found 9 files to organize
+2025-09-18 16:11:20,710 - INFO - Moved: New Bitmap image.bmp -> Images/New Bitmap image.bmp
+2025-09-18 16:11:20,711 - INFO - Moved: New Microsoft PowerPoint Presentation (2).pDF -> Documents/New Microsoft PowerPoint Presentation (2).pDF
+2025-09-18 16:11:20,727 - INFO - Moved: New Microsoft PowerPoint Presentation (3).pdf -> Documents/New Microsoft PowerPoint Presentation (3).pdf
+2025-09-18 16:11:20,734 - INFO - Moved: New Microsoft PowerPoint Presentation.pptx -> Documents/New Microsoft PowerPoint Presentation.pptx
+2025-09-18 16:11:20,738 - INFO - Moved: New Microsoft Word Document.docx -> Documents/New Microsoft Word Document.docx
+2025-09-18 16:11:20,743 - INFO - Moved: New Text Document (2).mp3 -> Audio/New Text Document (2).mp3
+2025-09-18 16:11:20,745 - INFO - Moved: New Text Document (2).mp4 -> Videos/New Text Document (2).mp4
+2025-09-18 16:11:20,745 - INFO - Moved: New Text Document (2).py -> Code/New Text Document (2).py
+2025-09-18 16:11:20,747 - INFO - Moved: New Text Document.txt -> Documents/New Text Document.txt
+2025-09-18 16:11:20,747 - INFO - ----------------------------------------
+2025-09-18 16:11:20,747 - INFO - Summary: 9 files moved, 0 errors
+2025-09-18 16:11:20,747 - INFO - Undo data saved to C:\Users\anjan\Desktop\2file_org\.file_organizer_undo.json

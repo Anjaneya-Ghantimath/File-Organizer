@@ -1,0 +1,9 @@
+2025-09-19 10:35:46,159 - INFO - File Organizer initialized. Log file: logs\file_organizer_20250919_103546.log
+2025-09-19 10:35:48,126 - INFO - Starting undo operation
+2025-09-19 10:35:48,165 - INFO - Loaded 3 undo entries
+2025-09-19 10:35:48,165 - INFO - Undone: New Microsoft Excel Worksheet.xlsx -> 2file_org/
+2025-09-19 10:35:48,165 - INFO - Undone: New Microsoft PowerPoint Presentation (2).pptx -> 2file_org/
+2025-09-19 10:35:48,178 - INFO - Undone: New Microsoft PowerPoint Presentation_1.pptx -> 2file_org/
+2025-09-19 10:35:48,178 - INFO - ----------------------------------------
+2025-09-19 10:35:48,202 - INFO - Undo Summary: 3 files moved back, 0 errors
+2025-09-19 10:35:48,202 - INFO - Undo data cleared

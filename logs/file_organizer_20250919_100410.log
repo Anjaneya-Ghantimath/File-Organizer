@@ -1,0 +1,7 @@
+2025-09-19 10:04:10,760 - INFO - File Organizer initialized. Log file: logs\file_organizer_20250919_100410.log
+2025-09-19 10:04:10,772 - INFO - Starting file organization
+2025-09-19 10:04:10,773 - INFO - Target directory: C:\Users\anjan\Desktop\2file_org
+2025-09-19 10:04:10,774 - INFO - Sort by: name, Order: asc
+2025-09-19 10:04:10,778 - INFO - Category folders created/verified
+2025-09-19 10:04:10,784 - INFO - Files sorted by name (asc)
+2025-09-19 10:04:10,784 - INFO - No files found to organize

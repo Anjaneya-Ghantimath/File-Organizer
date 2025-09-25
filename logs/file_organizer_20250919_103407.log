@@ -1,0 +1,22 @@
+2025-09-19 10:34:07,883 - INFO - File Organizer initialized. Log file: logs\file_organizer_20250919_103407.log
+2025-09-19 10:34:07,893 - INFO - Starting file organization
+2025-09-19 10:34:07,893 - INFO - Target directory: C:\Users\anjan\Desktop\2file_org
+2025-09-19 10:34:07,894 - INFO - Sort by: name, Order: asc
+2025-09-19 10:34:07,895 - INFO - Category folders created/verified
+2025-09-19 10:34:07,921 - INFO - Files sorted by name (asc)
+2025-09-19 10:34:07,922 - INFO - Detecting duplicate files...
+2025-09-19 10:34:07,925 - INFO - Duplicate detection completed: 0 name groups, 1 size groups
+2025-09-19 10:34:07,925 - INFO - Duplicate detection completed
+2025-09-19 10:34:07,927 - INFO - Found 9 files to organize
+2025-09-19 10:34:07,927 - INFO - Moved: New Bitmap image.bmp -> Images/New Bitmap image.bmp
+2025-09-19 10:34:07,931 - INFO - Moved: New Microsoft PowerPoint Presentation (2).pDF -> Documents/New Microsoft PowerPoint Presentation (2).pDF
+2025-09-19 10:34:07,933 - INFO - Moved: New Microsoft PowerPoint Presentation (3).pdf -> Documents/New Microsoft PowerPoint Presentation (3).pdf
+2025-09-19 10:34:07,934 - INFO - Moved: New Microsoft PowerPoint Presentation.pptx -> Documents/New Microsoft PowerPoint Presentation.pptx
+2025-09-19 10:34:07,937 - INFO - Moved: New Microsoft Word Document.docx -> Documents/New Microsoft Word Document.docx
+2025-09-19 10:34:07,940 - INFO - Moved: New Text Document (2).mp3 -> Audio/New Text Document (2).mp3
+2025-09-19 10:34:07,957 - INFO - Moved: New Text Document (2).mp4 -> Videos/New Text Document (2).mp4
+2025-09-19 10:34:07,963 - INFO - Moved: New Text Document (2).py -> Code/New Text Document (2).py
+2025-09-19 10:34:07,968 - INFO - Moved: New Text Document.txt -> Documents/New Text Document.txt
+2025-09-19 10:34:07,969 - INFO - ----------------------------------------
+2025-09-19 10:34:07,976 - INFO - Summary: 9 files moved, 0 errors
+2025-09-19 10:34:07,982 - INFO - Undo data saved to C:\Users\anjan\Desktop\2file_org\.file_organizer_undo.json

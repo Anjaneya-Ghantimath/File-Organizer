@@ -1,0 +1,16 @@
+2025-09-19 10:35:08,353 - INFO - File Organizer initialized. Log file: logs\file_organizer_20250919_103508.log
+2025-09-19 10:35:08,361 - INFO - Starting file organization
+2025-09-19 10:35:08,362 - INFO - Target directory: C:\Users\anjan\Desktop\2file_org
+2025-09-19 10:35:08,363 - INFO - Sort by: name, Order: asc
+2025-09-19 10:35:08,365 - INFO - Category folders created/verified
+2025-09-19 10:35:08,366 - INFO - Files sorted by name (asc)
+2025-09-19 10:35:08,367 - INFO - Detecting duplicate files...
+2025-09-19 10:35:08,369 - INFO - Duplicate detection completed: 0 name groups, 1 size groups
+2025-09-19 10:35:08,369 - INFO - Duplicate detection completed
+2025-09-19 10:35:08,370 - INFO - Found 3 files to organize
+2025-09-19 10:35:08,370 - INFO - Moved: New Microsoft Excel Worksheet.xlsx -> Documents/New Microsoft Excel Worksheet.xlsx
+2025-09-19 10:35:08,371 - INFO - Moved: New Microsoft PowerPoint Presentation (2).pptx -> Documents/New Microsoft PowerPoint Presentation (2).pptx
+2025-09-19 10:35:08,384 - INFO - Moved: New Microsoft PowerPoint Presentation.pptx -> Documents/New Microsoft PowerPoint Presentation_1.pptx
+2025-09-19 10:35:08,384 - INFO - ----------------------------------------
+2025-09-19 10:35:08,384 - INFO - Summary: 3 files moved, 0 errors
+2025-09-19 10:35:08,385 - INFO - Undo data saved to C:\Users\anjan\Desktop\2file_org\.file_organizer_undo.json

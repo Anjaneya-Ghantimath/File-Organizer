@@ -1,0 +1,13 @@
+2025-09-17 10:42:52,727 - INFO - File Organizer initialized. Log file: logs\file_organizer_20250917_104252.log
+2025-09-17 10:42:55,012 - INFO - Starting file organization
+2025-09-17 10:42:55,018 - INFO - Target directory: C:\Users\anjan\Desktop\2file_org
+2025-09-17 10:42:55,137 - INFO - Category folders created/verified
+2025-09-17 10:42:55,147 - INFO - Found 6 files to organize
+2025-09-17 10:42:55,163 - INFO - Moved: New Bitmap image.bmp -> Images/New Bitmap image.bmp
+2025-09-17 10:42:55,172 - INFO - Moved: New Microsoft Excel Worksheet.xlsx -> Documents/New Microsoft Excel Worksheet.xlsx
+2025-09-17 10:42:55,183 - INFO - Moved: New Microsoft PowerPoint Presentation.pptx -> Documents/New Microsoft PowerPoint Presentation.pptx
+2025-09-17 10:42:55,213 - INFO - Moved: New Microsoft Word Document.docx -> Documents/New Microsoft Word Document.docx
+2025-09-17 10:42:55,221 - INFO - Moved: New Text Document (2).mp4 -> Videos/New Text Document (2).mp4
+2025-09-17 10:42:55,247 - INFO - Moved: New Text Document.txt -> Documents/New Text Document.txt
+2025-09-17 10:42:55,255 - INFO - ----------------------------------------
+2025-09-17 10:42:55,261 - INFO - Summary: 6 files moved, 0 errors

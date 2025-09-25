@@ -1,0 +1,15 @@
+2025-09-19 10:04:22,868 - INFO - File Organizer initialized. Log file: logs\file_organizer_20250919_100422.log
+2025-09-19 10:04:24,821 - INFO - Starting undo operation
+2025-09-19 10:04:24,879 - INFO - Loaded 9 undo entries
+2025-09-19 10:04:24,888 - INFO - Undone: New Text Document (2).py -> 2file_org/
+2025-09-19 10:04:24,893 - INFO - Undone: New Microsoft PowerPoint Presentation (3).pdf -> 2file_org/
+2025-09-19 10:04:24,901 - INFO - Undone: New Microsoft PowerPoint Presentation (2).pDF -> 2file_org/
+2025-09-19 10:04:24,905 - INFO - Undone: New Text Document (2).mp4 -> 2file_org/
+2025-09-19 10:04:24,909 - INFO - Undone: New Text Document (2).mp3 -> 2file_org/
+2025-09-19 10:04:24,911 - INFO - Undone: New Text Document.txt -> 2file_org/
+2025-09-19 10:04:24,913 - INFO - Undone: New Microsoft PowerPoint Presentation.pptx -> 2file_org/
+2025-09-19 10:04:24,914 - INFO - Undone: New Microsoft Word Document.docx -> 2file_org/
+2025-09-19 10:04:24,918 - INFO - Undone: New Bitmap image.bmp -> 2file_org/
+2025-09-19 10:04:24,919 - INFO - ----------------------------------------
+2025-09-19 10:04:24,919 - INFO - Undo Summary: 9 files moved back, 0 errors
+2025-09-19 10:04:24,921 - INFO - Undo data cleared
