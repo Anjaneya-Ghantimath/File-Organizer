@@ -1328,13 +1328,15 @@ class FileOrganizerGUI:
         
         self.style.configure('Header.TFrame', background=self.colors['primary'])
         
-        # Progress bar style
+        # Progress bar style with green color
         self.style.configure('Colored.Horizontal.TProgressbar',
-                           background=self.colors['progress_fill'],
-                           troughcolor=self.colors['progress_bg'],
-                           borderwidth=0,
-                           lightcolor=self.colors['progress_fill'],
-                           darkcolor=self.colors['progress_fill'])
+                           background='#10b981',  # Green fill
+                           troughcolor='#e5e7eb',
+                           borderwidth=2,
+                           relief='solid',
+                           bordercolor='#374151',
+                           lightcolor='#34d399',
+                           darkcolor='#059669')
         
         # Entry style
         self.style.configure('Modern.TEntry',
@@ -1590,8 +1592,8 @@ class FileOrganizerGUI:
                                             bg='#dcfce7', fg=self.colors['dark'])
             self.stats_labels[key].pack(pady=(0, 5), padx=10)
         
-        # Enhanced progress bar with gradient effect
-        progress_container = tk.Frame(progress_inner, bg=self.colors['progress_bg'], height=30, relief='solid', bd=1)
+        # Enhanced progress bar with green gradient effect
+        progress_container = tk.Frame(progress_inner, bg='#f0fdf4', height=30, relief='solid', bd=1)
         progress_container.pack(fill=tk.X)
         progress_container.pack_propagate(False)
         
@@ -2029,13 +2031,13 @@ class FileOrganizerGUI:
             
             self.progress_var.set(f"{emoji} {action}: {current}/{total} ({percentage:.1f}%) - {display_name}")
             
-            # Add subtle progress bar color changes based on progress
+            # Add subtle progress bar color changes based on progress (green theme)
             if percentage < 30:
-                progress_color = '#ef4444'  # Red
+                progress_color = '#059669'  # Dark green
             elif percentage < 70:
-                progress_color = '#f59e0b'  # Orange
+                progress_color = '#10b981'  # Medium green
             else:
-                progress_color = '#10b981'  # Green
+                progress_color = '#34d399'  # Light green
                 
             # Update progress bar style dynamically
             self.style.configure('Colored.Horizontal.TProgressbar', background=progress_color)
