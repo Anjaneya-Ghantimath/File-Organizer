@@ -1167,17 +1167,135 @@ class FileOrganizerGUI:
                 messagebox.showwarning("Invalid Input", "Please provide valid extensions.")
                 return
 
-            # Save to organizer if available
+            # Ensure extensions start with dot
+            extensions = {ext if ext.startswith('.') else f'.{ext}' for ext in extensions}
+
+            # Save to organizer if available, otherwise create a temporary one
+            organizer = None
             if hasattr(self, 'organizer_instance') and self.organizer_instance:
-                if self.organizer_instance.save_custom_category(name, extensions):
-                    messagebox.showinfo("✅ Success", f"Category '{name}' saved successfully!")
-                    category_name_var.set("")
-                    extensions_var.set("")
-                else:
-                    messagebox.showerror("❌ Error", "Failed to save category.")
+                organizer = self.organizer_instance
+            else:
+                # Create a temporary organizer for saving categories
+                from pathlib import Path
+                try:
+                    organizer = SimpleFileOrganizer(str(Path.cwd()))
+                except Exception as e:
+                    messagebox.showerror("❌ Error", f"Failed to initialize organizer: {e}")
+                    return
+
+            if organizer and organizer.save_custom_category(name, extensions):
+                messagebox.showinfo("✅ Success", f"Category '{name}' saved successfully!")
+                category_name_var.set("")
+                extensions_var.set("")
+                # Refresh the categories display
+                load_categories()
+            else:
+                messagebox.showerror("❌ Error", "Failed to save category. Please check the name and try again.")
 
         ttk.Button(form_frame, text="💾 Save Category", command=save_category,
                   style='Success.TButton').pack(pady=15)
+
+        # Display existing categories
+        existing_frame = tk.Frame(categories_window, bg=self.colors['card_bg'], relief='solid', bd=1)
+        existing_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 20))
+
+        tk.Label(existing_frame, text="Existing Categories", font=("Segoe UI", 14, "bold"),
+                bg=self.colors['card_bg'], fg=self.colors['text']).pack(pady=10)
+
+        # Categories list
+        categories_text = ScrolledText(existing_frame, height=10, width=70)
+        categories_text.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
+
+        def load_categories():
+            """Load and display existing categories."""
+            categories_text.delete(1.0, tk.END)
+            
+            # Get categories from organizer instance or create a temporary one
+            if hasattr(self, 'organizer_instance') and self.organizer_instance:
+                categories = self.organizer_instance.file_categories
+            else:
+                # Create a temporary organizer to get default categories
+                from pathlib import Path
+                temp_organizer = SimpleFileOrganizer(str(Path.cwd()))
+                categories = temp_organizer.file_categories
+            
+            for name, extensions in categories.items():
+                extensions_str = ', '.join(sorted(extensions))
+                categories_text.insert(tk.END, f"📁 {name}:\n")
+                categories_text.insert(tk.END, f"   Extensions: {extensions_str}\n\n")
+        
+        # Load categories on window open
+        load_categories()
+        
+        # Buttons frame
+        buttons_frame = tk.Frame(existing_frame, bg=self.colors['card_bg'])
+        buttons_frame.pack(pady=10)
+        
+        ttk.Button(buttons_frame, text="🔄 Refresh", command=load_categories,
+                  style='Primary.TButton').pack(side=tk.LEFT, padx=(0, 10))
+        
+        # Delete category functionality
+        def delete_category():
+            """Delete a selected category."""
+            selection = categories_text.get(tk.SEL_FIRST, tk.SEL_LAST)
+            if not selection:
+                messagebox.showwarning("No Selection", "Please select a category to delete.")
+                return
+            
+            # Extract category name from selection
+            lines = selection.split('\n')
+            category_name = None
+            for line in lines:
+                if line.startswith('📁 '):
+                    category_name = line.replace('📁 ', '').replace(':', '').strip()
+                    break
+            
+            if not category_name:
+                messagebox.showwarning("Invalid Selection", "Please select a valid category name.")
+                return
+            
+            # Don't allow deletion of default categories
+            default_categories = {"Documents", "Images", "Videos", "Audio", "Archives", "Code", "Executables", "Fonts", "Data", "Others", "Suspicious"}
+            if category_name in default_categories:
+                messagebox.showwarning("Cannot Delete", f"'{category_name}' is a default category and cannot be deleted.")
+                return
+            
+            # Confirm deletion
+            result = messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete the category '{category_name}'?")
+            if not result:
+                return
+            
+            # Delete from database
+            organizer = None
+            if hasattr(self, 'organizer_instance') and self.organizer_instance:
+                organizer = self.organizer_instance
+            else:
+                from pathlib import Path
+                try:
+                    organizer = SimpleFileOrganizer(str(Path.cwd()))
+                except Exception as e:
+                    messagebox.showerror("❌ Error", f"Failed to initialize organizer: {e}")
+                    return
+            
+            if organizer and organizer.db_connection:
+                try:
+                    cursor = organizer.db_connection.cursor()
+                    cursor.execute("DELETE FROM custom_categories WHERE name = ?", (category_name,))
+                    organizer.db_connection.commit()
+                    
+                    # Remove from in-memory categories
+                    if category_name in organizer.file_categories:
+                        del organizer.file_categories[category_name]
+                    
+                    messagebox.showinfo("✅ Success", f"Category '{category_name}' deleted successfully!")
+                    load_categories()
+                except Exception as e:
+                    messagebox.showerror("❌ Error", f"Failed to delete category: {e}")
+            else:
+                messagebox.showerror("❌ Error", "Database connection not available.")
+        
+        ttk.Button(buttons_frame, text="🗑️ Delete Selected", command=delete_category,
+                  style='Danger.TButton').pack(side=tk.LEFT)
 
     def show_analytics_window(self):
         """Show analytics and history window."""
@@ -1478,7 +1596,10 @@ class FileOrganizerGUI:
         backup_cb.pack(anchor=tk.W, pady=(0, 5))
         
         ttk.Button(backup_frame, text="📂 Backup Location", 
-                  command=self._choose_backup_location, style='Primary.TButton').pack(anchor=tk.W)
+                  command=self._choose_backup_location, style='Primary.TButton').pack(anchor=tk.W, pady=(0, 5))
+        
+        ttk.Button(backup_frame, text="🔄 Recover from Backup", 
+                  command=self._recover_from_backup, style='Success.TButton').pack(anchor=tk.W)
 
         # Third row - Advanced features
         row3 = tk.Frame(org_inner, bg=self.colors['card_bg'])
@@ -1501,8 +1622,6 @@ class FileOrganizerGUI:
                   command=self.show_statistics_window, style='Primary.TButton').pack(side=tk.LEFT, padx=(0, 10))
         ttk.Button(advanced_buttons, text="🏷️ Categories", 
                   command=self.show_custom_categories_window, style='Primary.TButton').pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Button(advanced_buttons, text="📈 Analytics", 
-                  command=self.show_analytics_window, style='Primary.TButton').pack(side=tk.LEFT, padx=(0, 10))
 
         # Notification bar for malware/duplicate alerts
         self.notification_frame = tk.Frame(main_container, bg=self.colors['danger'], height=40)
@@ -1638,6 +1757,8 @@ class FileOrganizerGUI:
 
         # Initialize variables
         self.backup_location = None
+        self.current_backup_path = None
+        self.current_backup_metadata = None
 
     def start_spinner(self):
         """Start loading spinner animation."""
@@ -1746,12 +1867,13 @@ class FileOrganizerGUI:
                               f"Backup will be saved to:\n{path}")
 
     def _create_backup(self, source_dir):
-        """Create backup of files before organizing."""
+        """Create backup of files before organizing with recovery support."""
         if not self.backup_location:
             return False
         
         try:
             import zipfile
+            import json
             from datetime import datetime
             
             # Create backup filename with timestamp
@@ -1761,18 +1883,106 @@ class FileOrganizerGUI:
             
             self.message_queue.put(f"Creating backup: {backup_filename}\n")
             
+            # Store backup metadata
+            backup_metadata = {
+                "timestamp": timestamp,
+                "source_directory": str(source_dir),
+                "backup_path": str(backup_path),
+                "files_backed_up": [],
+                "deleted_files": [],
+                "moved_files": [],
+                "created_at": datetime.now().isoformat()
+            }
+            
             with zipfile.ZipFile(backup_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
                 source_path = Path(source_dir)
                 files = [f for f in source_path.iterdir() if f.is_file() and not f.name.startswith('.')]
                 
                 for file_path in files:
+                    # Store file info in metadata
+                    file_info = {
+                        "original_path": str(file_path),
+                        "filename": file_path.name,
+                        "size": file_path.stat().st_size,
+                        "modified": file_path.stat().st_mtime
+                    }
+                    backup_metadata["files_backed_up"].append(file_info)
+                    
+                    # Add file to backup
                     zipf.write(file_path, file_path.name)
             
+            # Save metadata as JSON file in backup directory
+            metadata_filename = f"backup_metadata_{timestamp}.json"
+            metadata_path = Path(self.backup_location) / metadata_filename
+            
+            with open(metadata_path, 'w') as f:
+                json.dump(backup_metadata, f, indent=2)
+            
+            # Store current backup info for recovery
+            self.current_backup_path = backup_path
+            self.current_backup_metadata = backup_metadata
+            
             self.message_queue.put(f"✅ Backup created successfully: {backup_path}\n")
+            self.message_queue.put(f"📋 Metadata saved: {metadata_path}\n")
             return True
             
         except Exception as e:
             self.message_queue.put(f"❌ Backup failed: {e}\n")
+            return False
+
+    def _recover_from_backup(self):
+        """Recover files from the most recent backup."""
+        if not hasattr(self, 'current_backup_path') or not self.current_backup_path:
+            messagebox.showerror("❌ No Backup Available", 
+                               "No backup found to recover from.\nPlease create a backup first.")
+            return False
+        
+        try:
+            import zipfile
+            import json
+            from pathlib import Path
+            
+            # Confirm recovery
+            result = messagebox.askyesno("🔄 Recover from Backup", 
+                                       f"Recover files from backup?\n\n"
+                                       f"Backup: {self.current_backup_path.name}\n"
+                                       f"This will restore all files to their original locations.")
+            if not result:
+                return False
+            
+            self.message_queue.put("🔄 Starting backup recovery...\n")
+            
+            # Extract backup to original location
+            with zipfile.ZipFile(self.current_backup_path, 'r') as zipf:
+                # Get list of files in backup
+                file_list = zipf.namelist()
+                
+                for filename in file_list:
+                    # Extract to original directory
+                    zipf.extract(filename, self.current_backup_metadata["source_directory"])
+                    self.message_queue.put(f"✅ Recovered: {filename}\n")
+            
+            # Update metadata to track recovery
+            if hasattr(self, 'current_backup_metadata'):
+                self.current_backup_metadata["recovered_at"] = datetime.now().isoformat()
+                self.current_backup_metadata["recovery_status"] = "completed"
+                
+                # Save updated metadata
+                metadata_filename = f"backup_metadata_{self.current_backup_metadata['timestamp']}.json"
+                metadata_path = Path(self.backup_location) / metadata_filename
+                
+                with open(metadata_path, 'w') as f:
+                    json.dump(self.current_backup_metadata, f, indent=2)
+            
+            self.message_queue.put("✅ Backup recovery completed successfully!\n")
+            messagebox.showinfo("✅ Recovery Complete", 
+                              "All files have been recovered from backup!\n\n"
+                              "Files restored to their original locations.")
+            return True
+            
+        except Exception as e:
+            self.message_queue.put(f"❌ Recovery failed: {e}\n")
+            messagebox.showerror("❌ Recovery Failed", f"Failed to recover from backup:\n{e}")
             return False
 
     def _poll_log_queue(self):

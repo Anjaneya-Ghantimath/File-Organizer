@@ -6,14 +6,16 @@ A Python tool and GUI application that organizes files in a target directory wit
 
 - **Multiple Organization Modes**: Organize by `type`, `date`, `size`, or file `extension`
 - **Malware-Suspicious Detection**: Flags and quarantines suspicious files to a `Suspicious/` folder with summaries
-- **Optional Backups**: Create a zip backup of the directory before organizing (GUI and CLI)
+- **Enhanced Backup System**: Create zip backups with metadata and full recovery capabilities
 - **Professional GUI**: Modern Tkinter GUI with progress, logs, notifications, and backup controls
 - **Dry Run Mode**: Preview all moves without changing files
 - **Undo Support**: Safely revert the last organization
+- **Backup Recovery**: Restore all files from backup with one-click recovery
+- **Duplicate Detection**: Find and handle duplicate files automatically
 - **Sorting Options**: Sort processing order by `name`, `date`, or `size`, asc/desc
 - **Smart Conflict Resolution**: Auto-renames with numeric suffixes to avoid overwrites
 - **Comprehensive Logging**: Timestamped logs in `logs/` with INFO/WARNING/ERROR
-- **Quick Controls**: “Clear Logs” button and real-time security banner when suspicious files are found
+- **Quick Controls**: "Clear Logs" button and real-time security banner when suspicious files are found
 
 ## Organization Modes
 
@@ -21,6 +23,17 @@ A Python tool and GUI application that organizes files in a target directory wit
 - **date**: Groups by recency buckets: `This Week`, `This Month`, `This Year`, or year folders; falls back to `Unknown Date`
 - **size**: Groups by size: `Small (< 1MB)`, `Medium (1-10MB)`, `Large (10-100MB)`, `Very Large (> 100MB)`, or `Unknown Size`
 - **extension**: Creates a folder named after the file extension (e.g., `pdf/`, `png/`); `No Extension` if none
+
+## Enhanced Backup System
+
+The backup system now provides comprehensive file protection:
+
+- **Automatic Backup Creation**: Creates timestamped ZIP files with complete file inventory
+- **Metadata Tracking**: Saves detailed JSON metadata including file information, timestamps, and operation history
+- **One-Click Recovery**: Restore all files from backup to their original locations
+- **File Safety**: All deleted files are preserved and can be fully recovered
+- **Recovery Confirmation**: User confirmation dialogs before recovery operations
+- **Progress Tracking**: Detailed progress messages during backup and recovery operations
 
 ## Suspicious File Handling
 
@@ -100,12 +113,15 @@ python file_organizer.py
 ```
 
 In the GUI you can:
-- Pick a target directory
-- Choose organization mode and sorting
-- Toggle Dry Run or Undo
+- Pick a target directory with drag & drop support
+- Choose organization mode and sorting options
+- Toggle Dry Run or Undo operations
 - Enable backup and choose a destination directory
-- View colored logs and a green progress bar (status and percentage)
+- Recover files from backup with one-click recovery
+- Find and handle duplicate files
+- View colored logs and progress tracking
 - Get completion notifications, including security alerts showing number of suspicious files quarantined
+- Access advanced features like Statistics and Custom Categories
 
 ## Output Structure (examples)
 
@@ -134,10 +150,12 @@ Target Directory/
 ## Safety & Reliability
 
 - Dry Run mode for safe previews
-- Duplicate handling with numeric suffixes
+- Duplicate detection and handling with numeric suffixes
 - Undo saves a `.file_organizer_undo.json` in the target directory
 - Skips dotfiles in the root of the target during processing
-- Optional pre-organization backup (GUI and CLI)
+- Enhanced backup system with metadata and recovery capabilities
+- One-click backup recovery for complete file restoration
+- Comprehensive logging for all operations
 
 ## Customization
 
@@ -156,6 +174,12 @@ This project is open source. Feel free to modify and distribute.
 
 ## Changelog
 
+- **v2.2** (2025): Enhanced Backup & Recovery System
+  - Added comprehensive backup recovery functionality with one-click restoration
+  - Enhanced backup creation with detailed metadata tracking
+  - Improved GUI with backup recovery button and better user experience
+  - Added duplicate detection and handling capabilities
+  - Enhanced file safety with complete backup and recovery system
 - **v2.1** (2025): Backups and Security Notifications
   - Added GUI backup toggle and location chooser, backup in CLI (`--backup`)
   - Security notification banner and completion summaries with suspicious counts
