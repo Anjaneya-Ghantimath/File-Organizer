@@ -169,7 +169,7 @@ class SimpleFileOrganizer:
             ]
         )
         self.logger = logging.getLogger(__name__)
-        self.logger.info(f"Enhanced File Organizer initialized. Log file: {log_filename}")
+        self.logger.info(f"File Organizer initialized. Log file: {log_filename}")
 
     def load_custom_categories(self):
         """Load custom categories from database."""
@@ -1483,7 +1483,7 @@ class FileOrganizerGUI:
         header_content.pack(expand=True, fill=tk.BOTH)
         
         title_font = tkFont.Font(family="Segoe UI", size=18, weight="bold")
-        tk.Label(header_content, text="🗂️ Enhanced File Organizer Pro", font=title_font, 
+        tk.Label(header_content, text="🗂️ File Organizer", font=title_font, 
                  fg='white', bg=self.colors['primary']).pack(side=tk.LEFT, pady=15, padx=20)
         
         # Theme toggle button
@@ -2353,7 +2353,7 @@ def main():
         # Run CLI version
         organizer = SimpleFileOrganizer(directory)
         
-        print("🗂️ Enhanced File Organizer Pro")
+        print("🗂️  File Organizer ")
         print("=" * 50)
         
         if undo_mode:
