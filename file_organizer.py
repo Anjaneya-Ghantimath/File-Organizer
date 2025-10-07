@@ -1679,7 +1679,7 @@ class FileOrganizerGUI:
         status_label.pack(side=tk.LEFT, padx=(0, 15), pady=10)
 
         # Enhanced progress card with animations
-        progress_card = ttk.LabelFrame(main_container, text=" 📊 Progress Tracker ", style='Card.TLabelframe')
+        progress_card = ttk.LabelFrame()
         progress_card.pack(fill=tk.X, pady=(0, 15))
         
         progress_inner = tk.Frame(progress_card, bg=self.colors['card_bg'])
@@ -1721,7 +1721,7 @@ class FileOrganizerGUI:
         self.progress_bar.pack(expand=True, fill=tk.BOTH, padx=3, pady=3)
 
         # Enhanced logs card with better colors and filtering
-        logs_card = ttk.LabelFrame(main_container, text=" 📝 Activity Logs ", style='Card.TLabelframe')
+        logs_card = ttk.LabelFrame()
         logs_card.pack(fill=tk.BOTH, expand=True)
         
         log_container = tk.Frame(logs_card, bg=self.colors['card_bg'])
